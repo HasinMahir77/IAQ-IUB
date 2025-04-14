@@ -86,8 +86,22 @@ def receive_sensor_data():
     try:
         if request.is_json:
             data = request.get_json()
-            save_to_db(data)
-            logger.info(f"Received JSON data: {data}")
+
+            # Map the keys from the received data to the expected format
+            mapped_data = {
+                "deviceid": data.get("deviceid"),
+                "air_temperature": data.get("temp"),  # Map 'temp' to 'air_temperature'
+                "humidity": data.get("hum"),  # Map 'hum' to 'humidity'
+                "pressure": data.get("pressure"),
+                "altitude": 10,  # Placeholder if no altitude data is sent
+                "pm1": data.get("pm1"),
+                "pm2_5": data.get("pm25"),  # Map 'pm25' to 'pm2_5'
+                "pm10": data.get("pm10"),
+                "co2": data.get("co2")
+            }
+
+            save_to_db(mapped_data)
+            logger.info(f"Received JSON data: {mapped_data}")
             return jsonify({"status": "success", "message": "JSON received"}), 200
         else:
             logger.warning("Received non-JSON data.")
