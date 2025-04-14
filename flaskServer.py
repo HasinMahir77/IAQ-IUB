@@ -2,8 +2,13 @@ from flask import Flask, request, jsonify
 import sqlite3
 from datetime import datetime
 import pytz
+import logging
 
 DB_FILE = "sensor_data.db"
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 def setup_database():
     """Creates the SQLite table if it doesn't exist."""
@@ -27,9 +32,9 @@ def setup_database():
         """)
         conn.commit()
         conn.close()
-        print("Database setup complete.")
+        logger.info("Database setup complete.")
     except sqlite3.Error as e:
-        print(f"Error setting up database: {e}")
+        logger.error(f"Error setting up database: {e}")
 
 def save_to_db(payload):
     """Inserts data into the SQLite database."""
@@ -54,7 +59,7 @@ def save_to_db(payload):
             f"   🏭 PM10       : {payload['pm10']} µg/m³\n"
             f"   🏭 CO2        : {payload['co2']} ppm\n"
         )
-        print(formatted_data)
+        logger.info(formatted_data)
 
         # Insert into database
         cursor.execute("""
@@ -68,11 +73,11 @@ def save_to_db(payload):
 
         conn.commit()
         conn.close()
-        print("Data saved to database successfully.")
+        logger.info("Data saved to database successfully.")
     except sqlite3.Error as e:
-        print(f"Error saving data to database: {e}")
+        logger.error(f"Error saving data to database: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}")
 
 app = Flask(__name__)
 
@@ -82,12 +87,13 @@ def receive_sensor_data():
         if request.is_json:
             data = request.get_json()
             save_to_db(data)
-            print(f"Received JSON data: {data}")
+            logger.info(f"Received JSON data: {data}")
             return jsonify({"status": "success", "message": "JSON received"}), 200
         else:
+            logger.warning("Received non-JSON data.")
             return jsonify({"status": "error", "message": "Request must be JSON"}), 400
     except Exception as e:
-        print(f"Error processing request: {e}")
+        logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 if __name__ == '__main__':
