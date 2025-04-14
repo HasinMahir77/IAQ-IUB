@@ -3,8 +3,10 @@ import sqlite3
 from datetime import datetime
 import pytz
 import logging
+import os
 
-DB_FILE = "sensor_data.db"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(script_dir, "sensor_data.db")
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
