@@ -111,6 +111,10 @@ def receive_sensor_data():
     except Exception as e:
         logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
+    
+@app.route('/test', methods=['GET'])
+def test_route():
+    return "Server is online", 200
 
 if __name__ == '__main__':
     setup_database()
