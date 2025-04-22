@@ -87,7 +87,7 @@ def save_to_db(payload):
 DB_PATH = "sensor_data.db"          # Path to your SQLite DB
 PASSWORD = "mahirsquare"            # Change this to your preferred password
 HOST = "127.0.0.1"                  # Listen on localhost (not 0.0.0.0)
-PORT = "8080"
+PORT = "7070"
 
 # === Environment Variable for Password ===
 env = os.environ.copy()
