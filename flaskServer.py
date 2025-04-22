@@ -118,4 +118,4 @@ def test_route():
 
 if __name__ == '__main__':
     setup_database()
-    app.run(port=5000)
+    app.run(port=7000)
