@@ -139,7 +139,7 @@ def receive_sensor_data():
         logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
 
-@app.route('/admin')
+@app.route('/cfd/admin')
 def admin():
     """Proxy the requests to the sqlite_web running on localhost."""
     return redirect(f'http://127.0.0.1:{PORT}')
