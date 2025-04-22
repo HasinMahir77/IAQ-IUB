@@ -83,7 +83,7 @@ def save_to_db(payload):
 
 app = Flask(__name__)
 
-@app.route('/cfd', methods=['POST'])
+@app.route('/cfd/data', methods=['POST'])
 def receive_sensor_data():
     try:
         if request.is_json:
@@ -112,7 +112,7 @@ def receive_sensor_data():
         logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
     
-@app.route('/test', methods=['GET'])
+@app.route('/cfd/test', methods=['GET'])
 def test_route():
     return "Server is online", 200
 
