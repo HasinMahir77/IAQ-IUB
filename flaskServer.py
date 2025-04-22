@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify
-import sqlite3
-from datetime import datetime
-import pytz
-import logging
 import os
+import pytz
+import sqlite3
+import logging
+import threading
+import subprocess
+from datetime import datetime
+from flask import Flask, request, jsonify, redirect
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(script_dir, "sensor_data.db")
@@ -81,6 +83,31 @@ def save_to_db(payload):
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
 
+# === Configuration for sqlite_web ===
+DB_PATH = "sensor_data.db"          # Path to your SQLite DB
+PASSWORD = "mahirsquare"            # Change this to your preferred password
+HOST = "127.0.0.1"                  # Listen on localhost (not 0.0.0.0)
+PORT = "8080"
+
+# === Environment Variable for Password ===
+env = os.environ.copy()
+env["SQLITE_WEB_PASSWORD"] = PASSWORD
+
+# Function to start sqlite_web as a background subprocess
+def run_sqlite_web():
+    try:
+        subprocess.run(
+            ["sqlite_web", DB_PATH, "--host", HOST, "--port", PORT, "--password"],
+            env=env,
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        logger.error(f"❌ Failed to run sqlite_web: {e}")
+
+# Start sqlite_web in a separate thread so it runs in the background
+thread = threading.Thread(target=run_sqlite_web)
+thread.start()
+
 app = Flask(__name__)
 
 @app.route('/cfd/data', methods=['POST'])
@@ -111,7 +138,12 @@ def receive_sensor_data():
     except Exception as e:
         logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
-    
+
+@app.route('/admin')
+def admin():
+    """Proxy the requests to the sqlite_web running on localhost."""
+    return redirect(f'http://127.0.0.1:{PORT}')
+
 @app.route('/cfd/test', methods=['GET'])
 def test_route():
     return "Server is online", 200
