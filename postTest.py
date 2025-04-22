@@ -1,10 +1,10 @@
 import requests
 import json
 
-url = "http://199.250.210.176/api/cfd"
+url = "http://mahir.iotexperience.com/cfd/data"
 headers = {"Content-Type": "application/json"}
 data = {
-    "deviceid": 1,
+    "deviceid": 99,
     "temp": 22.5,
     "hum": 60.2,
     "pressure": 101325,

@@ -6,7 +6,7 @@ const char* ssid = "Mahir 2.4GHz";
 const char* password = "01741238814";
 
 // Flask server details
-#define SERVER_URL "http://199.250.210.176:3000/cfd"
+#define SERVER_URL "http://mahir.iotexperience.com/cfd/data"
 
 int deviceid = 4;
 
