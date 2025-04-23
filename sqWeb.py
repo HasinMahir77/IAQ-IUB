@@ -23,7 +23,7 @@ def run_sqlite_web():
     try:
         logger.info(f"🚀 Starting sqlite_web on http://{HOST}:{PORT} with password...")
         subprocess.run(
-            ["sqlite_web", DB_FILE, "--host", HOST, "--port", PORT, "--password"],
+            ["sqlite_web", DB_FILE, "--host", HOST, "--port", PORT, "--password", PASSWORD],  # Fix here
             env=env,
             check=True
         )
