@@ -13,17 +13,36 @@ DB_FILE = os.path.join(script_dir, "sensor_data.db")
 # SQLite Web configuration
 HOST = "127.0.0.1"
 PORT = "7001"
-PASSWORD = "mahirsquare"
+DEFAULT_PASSWORD = "mahirsquare"
 
-# Add password to environment
+# User credentials
+users = {
+    "arnoy": "63342",  # Read-only user
+    "zihan": "zihansquare",  # Read-write user
+}
+
+# Set SQLite Web password
 env = os.environ.copy()
-env["SQLITE_WEB_PASSWORD"] = PASSWORD
+env["SQLITE_WEB_PASSWORD"] = DEFAULT_PASSWORD
 
 def run_sqlite_web():
     try:
         logger.info(f"🚀 Starting sqlite_web on http://{HOST}:{PORT} with password...")
+
+        # Generate the authentication file with user roles (Read-Only and Read-Write)
+        auth_file = "/home/iotexp5/sqlite_web_auth.txt"
+        
+        # Write the user credentials into the auth file
+        with open(auth_file, 'w') as f:
+            for username, password in users.items():
+                if username == "arnoy":
+                    f.write(f"{username}:{password}:r\n")  # 'r' for read-only
+                else:
+                    f.write(f"{username}:{password}:rw\n")  # 'rw' for read-write
+
+        # Run sqlite_web with authentication
         subprocess.run(
-            ["sqlite_web", DB_FILE, "--host", HOST, "--port", PORT, "--password", PASSWORD],  # Fix here
+            ["sqlite_web", DB_FILE, "--host", HOST, "--port", PORT, "--password", DEFAULT_PASSWORD, "--auth", auth_file],  # Fix here
             env=env,
             check=True
         )
