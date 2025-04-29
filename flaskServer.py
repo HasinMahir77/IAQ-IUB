@@ -111,6 +111,92 @@ def receive_sensor_data():
     except Exception as e:
         logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 500
+
+@app.route('/cfd/get-latest-all', methods=['GET'])
+def get_latest_all():
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+
+        # Query to get the latest data for each unique deviceId
+        cursor.execute("""
+            SELECT t1.*
+            FROM sensor_data t1
+            INNER JOIN (
+                SELECT deviceId, MAX(timestamp) AS max_timestamp
+                FROM sensor_data
+                GROUP BY deviceId
+            ) t2
+            ON t1.deviceId = t2.deviceId AND t1.timestamp = t2.max_timestamp
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+
+        # Format the data into a list of dictionaries
+        latest_data = [
+            {
+                "id": row[0],
+                "deviceid": row[1],
+                "timestamp": row[2],
+                "air_temperature": row[3],
+                "humidity": row[4],
+                "pressure": row[5],
+                "altitude": row[6],
+                "pm1": row[7],
+                "pm2_5": row[8],
+                "pm10": row[9],
+                "co2": row[10]
+            }
+            for row in rows
+        ]
+
+        return jsonify({"status": "success", "data": latest_data}), 200
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving latest data: {e}")
+        return jsonify({"status": "error", "message": "Database error"}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 
+
+@app.route('/cfd/get-last-10/<string:deviceid>', methods=['GET'])
+def get_last_10(deviceid):
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+
+        # Query the last 10 rows for the given deviceid, ordered by timestamp in descending order
+        cursor.execute("""
+            SELECT air_temperature, humidity, timestamp
+            FROM sensor_data
+            WHERE deviceId = ?
+            ORDER BY timestamp DESC
+            LIMIT 10
+        """, (deviceid,))
+        rows = cursor.fetchall()
+        conn.close()
+
+        if not rows:
+            return jsonify({"error": "No data found for the given device ID"}), 404
+
+        # Reverse the order to get the oldest first
+        rows.reverse()
+
+        # Separate the data into three arrays: temperature, humidity, and time
+        temperatures = [row[0] for row in rows]
+        humidities = [row[1] for row in rows]
+        times = [datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S").strftime("%I:%M %p") for row in rows]
+
+        return jsonify({
+            "temperature": temperatures,
+            "humidity": humidities,
+            "time": times
+        }), 200
+    except sqlite3.Error as e:
+        logger.error(f"Database error: {e}")
+        return jsonify({"error": "Database error"}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return jsonify({"error": str(e)}), 500
     
 @app.route('/cfd/test', methods=['GET'])
 def test_route():
