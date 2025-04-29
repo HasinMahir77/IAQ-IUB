@@ -120,7 +120,7 @@ def get_latest_all():
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
-        # Query to get the latest data for each unique deviceId
+        # Query to get the latest data for each unique deviceId, ordered by deviceId
         cursor.execute("""
             SELECT t1.*
             FROM sensor_data t1
@@ -130,6 +130,7 @@ def get_latest_all():
                 GROUP BY deviceId
             ) t2
             ON t1.deviceId = t2.deviceId AND t1.timestamp = t2.max_timestamp
+            ORDER BY t1.deviceId
         """)
         rows = cursor.fetchall()
         conn.close()
@@ -158,7 +159,7 @@ def get_latest_all():
         return jsonify({"status": "error", "message": "Database error"}), 500
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        return jsonify({"status": "error", "message": "Internal server error"}), 
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 @app.route('/cfd/get-last-50/<string:deviceid>', methods=['GET'])
 def get_last_10(deviceid):
