@@ -168,7 +168,7 @@ def get_last_10(deviceid):
 
         # Query the last 50 rows for the given deviceid, ordered by timestamp in descending order
         cursor.execute("""
-            SELECT air_temperature, humidity, timestamp
+            SELECT air_temperature, humidity, pressure, pm1, pm2_5, pm10, CO2, timestamp
             FROM sensor_data
             WHERE deviceId = ?
             ORDER BY timestamp DESC
@@ -183,14 +183,24 @@ def get_last_10(deviceid):
         # Reverse the order to get the oldest first
         rows.reverse()
 
-        # Separate the data into three arrays: temperature, humidity, and time
+        # Separate the data into arrays for each metric
         temperatures = [row[0] for row in rows]
         humidities = [row[1] for row in rows]
-        times = [datetime.strptime(row[2], "%Y-%m-%d %H:%M:%S").strftime("%I:%M %p") for row in rows]
+        pressures = [row[2] for row in rows]
+        pm1s = [row[3] for row in rows]
+        pm25s = [row[4] for row in rows]
+        pm10s = [row[5] for row in rows]
+        co2s = [row[6] for row in rows]
+        times = [datetime.strptime(row[7], "%Y-%m-%d %H:%M:%S").strftime("%I:%M %p") for row in rows]
 
         return jsonify({
             "temperature": temperatures,
             "humidity": humidities,
+            "pressure": pressures,
+            "pm1": pm1s,
+            "pm2_5": pm25s,
+            "pm10": pm10s,
+            "co2": co2s,
             "time": times
         }), 200
     except sqlite3.Error as e:
