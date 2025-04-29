@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import sqlite3
 from datetime import datetime
 import pytz
@@ -82,6 +83,7 @@ def save_to_db(payload):
         logger.error(f"Unexpected error: {e}")
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/cfd/data', methods=['POST'])
 def receive_sensor_data():
@@ -158,19 +160,19 @@ def get_latest_all():
         logger.error(f"Unexpected error: {e}")
         return jsonify({"status": "error", "message": "Internal server error"}), 
 
-@app.route('/cfd/get-last-10/<string:deviceid>', methods=['GET'])
+@app.route('/cfd/get-last-50/<string:deviceid>', methods=['GET'])
 def get_last_10(deviceid):
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
-        # Query the last 10 rows for the given deviceid, ordered by timestamp in descending order
+        # Query the last 50 rows for the given deviceid, ordered by timestamp in descending order
         cursor.execute("""
             SELECT air_temperature, humidity, timestamp
             FROM sensor_data
             WHERE deviceId = ?
             ORDER BY timestamp DESC
-            LIMIT 10
+            LIMIT 50
         """, (deviceid,))
         rows = cursor.fetchall()
         conn.close()
