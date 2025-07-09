@@ -241,7 +241,7 @@ def download_device_data_csv(deviceid):
         csv_writer = csv.writer(output)
 
         # Write the CSV header
-        csv_writer.writerow(["ID", "Device ID", "Timestamp", "Air Temperature (°C)", "Humidity (%)", "Pressure (Pa)", "Altitude (m)", "PM1 (µg/m³)", "PM2.5 (µg/m³)", "PM10 (µg/m³)", "CO2 (ppm)"])
+        csv_writer.writerow(["id", "deviceId", "timestamp", "air_temperature", "humidity", "pressure", "altitude", "pm1", "pm2_5", "pm10", "co2"])
 
         # Write the data to the CSV file
         for row in rows:
