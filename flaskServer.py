@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS  # Import CORS
 import sqlite3
 from datetime import datetime
 import pytz
 import logging
 import os
+import csv
+import io
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(script_dir, "sensor_data.db")
@@ -214,6 +216,50 @@ def get_last_10(deviceid):
 @app.route('/cfd/test', methods=['GET'])
 def test_route():
     return "Server is online", 200
+
+@app.route('/cfd/full/<string:deviceid>', methods=['GET'])
+def download_device_data_csv(deviceid):
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+
+        # Query to get all data for the specific deviceId
+        cursor.execute("""
+            SELECT id, deviceId, timestamp, air_temperature, humidity, pressure, altitude, pm1, pm2_5, pm10, CO2
+            FROM sensor_data
+            WHERE deviceId = ?
+            ORDER BY timestamp ASC
+        """, (deviceid,))
+        rows = cursor.fetchall()
+        conn.close()
+
+        if not rows:
+            return jsonify({"error": "No data found for the given device ID"}), 404
+
+        # Create a CSV file in memory
+        output = io.StringIO()
+        csv_writer = csv.writer(output)
+
+        # Write the CSV header
+        csv_writer.writerow(["ID", "Device ID", "Timestamp", "Air Temperature (°C)", "Humidity (%)", "Pressure (Pa)", "Altitude (m)", "PM1 (µg/m³)", "PM2.5 (µg/m³)", "PM10 (µg/m³)", "CO2 (ppm)"])
+
+        # Write the data to the CSV file
+        for row in rows:
+            csv_writer.writerow(row)
+
+        # Create a response with the CSV content
+        response = make_response(output.getvalue())
+        response.headers['Content-Disposition'] = f'attachment; filename=device_{deviceid}_data.csv'
+        response.mimetype = 'text/csv'
+
+        logger.info(f"CSV download requested for device {deviceid} - {len(rows)} rows exported")
+        return response
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving data for device {deviceid}: {e}")
+        return jsonify({"status": "error", "message": "Database error"}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 if __name__ == '__main__':
     setup_database()
