@@ -61,7 +61,7 @@ hasinmahir77-iaq-iub/
 
 ## System Workflow
 1. Sensors collect environmental data on Arduino Mega
-2. ESP8266 transmits data to remote server at `mahir.iotexperience.com`
+2. ESP8266 get the data and transmits to remote server
 3. Flask web server receives and stores data in SQLite database
 4. Data can be accessed via web endpoints:
    - Get latest readings
