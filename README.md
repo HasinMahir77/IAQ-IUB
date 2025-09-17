@@ -43,7 +43,7 @@ The system tracks the following environmental parameters:
 - Remote CSV data export
 
 ## Repository Structure
-
+```
 hasinmahir77-iaq-iub/
 │
 ├── Node-Device_Codes/
@@ -57,11 +57,11 @@ hasinmahir77-iaq-iub/
 ├── postTest.py         # Standalone data posting test
 ├── sqWeb.py            # SQLite web interface
 └── LICENSE             # MIT License
-
+```
 
 ## System Workflow
 1. Sensors collect environmental data on Arduino Mega
-2. ESP8266 transmits data to remote server.
+2. ESP8266 transmits data to remote server at `mahir.iotexperience.com`
 3. Flask web server receives and stores data in SQLite database
 4. Data can be accessed via web endpoints:
    - Get latest readings
@@ -100,10 +100,7 @@ hasinmahir77-iaq-iub/
 - Download full device data as CSV
 
 ### Performance Testing
-Run "benchmark.py" to test data transmission performance
-
-## License
-This project is licensed under the MIT License.
+Run `benchmark.py` to test data transmission performance
 
 ## Authors
 - Hasin Mahir
